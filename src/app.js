@@ -91,10 +91,10 @@ async function startServer() {
   try {
     await db.connectDB();
     const app = createApp();
-    const port = Number(process.env.PORT) || 3000;
+    const PORT = process.env.PORT || 3000;
 
-    const server = app.listen(port, () => {
-      console.log(`Server đang chạy tại cổng ${port}.`);
+    const server = app.listen(PORT, () => {
+      console.log(`Server đang chạy tại cổng ${PORT}.`);
     });
 
     async function shutdown(signal) {
