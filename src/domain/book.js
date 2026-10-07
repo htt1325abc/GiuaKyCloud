@@ -9,12 +9,12 @@ function normalizeSettings(settings = {}) {
   const productPrefix = String(settings.productPrefix ?? '').trim();
   const vatRate = Number(settings.vatRate);
 
-  if (!productPrefix) {
-    throw new Error('PRODUCT_PREFIX chưa được cấu hình.');
+  if (productPrefix !== '293') {
+    throw new Error('PRODUCT_PREFIX phải bằng 293.');
   }
 
-  if (!Number.isFinite(vatRate) || vatRate < 0 || vatRate > 100) {
-    throw new Error('VAT_RATE phải là một số từ 0 đến 100.');
+  if (vatRate !== 9) {
+    throw new Error('VAT_RATE phải bằng 9.');
   }
 
   return { productPrefix, vatRate };
@@ -31,10 +31,8 @@ function createBookDocument(input = {}, settings = {}) {
     throw new BookValidationError('Vui lòng nhập mã sách.');
   }
 
-  if (!code.startsWith(productPrefix)) {
-    throw new BookValidationError(
-      `Mã sản phẩm phải bắt đầu bằng ${productPrefix}.`,
-    );
+  if (!code.startsWith('293')) {
+    throw new BookValidationError('Mã sản phẩm phải bắt đầu bằng 293.');
   }
 
   if (!title) {
@@ -50,16 +48,14 @@ function createBookDocument(input = {}, settings = {}) {
   }
 
   const normalizedPrice = Math.round(priceBeforeTax);
-  const priceAfterTax = Math.round(
-    normalizedPrice * (1 + vatRate / 100),
-  );
+  const priceAfterTax = Math.round(normalizedPrice * (1 + 9 / 100));
 
   return {
     code,
     title,
     ...(author ? { author } : {}),
     priceBeforeTax: normalizedPrice,
-    vatRate,
+    vatRate: 9,
     priceAfterTax,
     createdAt: settings.now ?? new Date(),
   };
