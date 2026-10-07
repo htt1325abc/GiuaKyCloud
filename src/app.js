@@ -5,6 +5,10 @@ const express = require('express');
 const { engine } = require('express-handlebars');
 const db = require('./config/db');
 const { createBookRouter } = require('./routes/bookRoutes');
+const {
+  createSessionMiddleware,
+  countSessionVisit,
+} = require('./config/session');
 
 function readNumberSetting(name) {
   const value = Number(process.env[name]);
@@ -27,6 +31,10 @@ function formatCurrency(value) {
 function createApp() {
   const app = express();
 
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
+
   app.engine(
     'hbs',
     engine({
@@ -40,6 +48,8 @@ function createApp() {
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
+  app.use(createSessionMiddleware());
+  app.use(countSessionVisit);
 
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });

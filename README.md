@@ -17,6 +17,7 @@ Không commit file `.env` hoặc bất kỳ URI và mật khẩu thật nào lê
 - `POST /books` kiểm tra dữ liệu rồi ghi collection `books` bằng `WRITE_MONGO_URI`.
 - Mã sách phải bắt đầu bằng `293`.
 - Backend tự tính VAT `9%`; client không được quyết định giá sau thuế.
+- Session không dùng `MemoryStore`. `connect-mongo` lưu phiên tập trung trong collection `sessions` của `DB_23IT293`, và số lượt truy cập trong phiên tăng sau mỗi lần mở trang quản lý.
 
 ## Kiểm thử
 
