@@ -3,6 +3,26 @@ require('dotenv').config();
 const path = require('node:path');
 const express = require('express');
 const { engine } = require('express-handlebars');
+const db = require('./config/db');
+const { createBookRouter } = require('./routes/bookRoutes');
+
+function readNumberSetting(name) {
+  const value = Number(process.env[name]);
+
+  if (!Number.isFinite(value)) {
+    throw new Error(`Biến môi trường ${name} phải là một số.`);
+  }
+
+  return value;
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+}
 
 function createApp() {
   const app = express();
@@ -12,6 +32,7 @@ function createApp() {
     engine({
       extname: '.hbs',
       defaultLayout: 'main',
+      helpers: { formatCurrency },
     }),
   );
   app.set('view engine', 'hbs');
@@ -24,26 +45,64 @@ function createApp() {
     res.status(200).json({ status: 'ok' });
   });
 
-  app.get('/', (_req, res) => {
-    res.render('home', {
-      title: 'Ứng dụng Quản lý Sách',
+  const productPrefix = process.env.PRODUCT_PREFIX?.trim() || '293';
+  const vatRate = readNumberSetting('VAT_RATE');
+
+  app.use(
+    createBookRouter({
+      getReadDb: () => db.readDb,
+      getWriteDb: () => db.writeDb,
+      productPrefix,
+      vatRate,
+    }),
+  );
+
+  app.use((_req, res) => {
+    res.status(404).render('error', {
+      title: 'Không tìm thấy trang',
+      message: 'Trang bạn yêu cầu không tồn tại.',
+    });
+  });
+
+  app.use((error, _req, res, _next) => {
+    console.error('Yêu cầu thất bại:', error.message);
+    res.status(500).render('error', {
+      title: 'Không thể xử lý yêu cầu',
+      message: 'Ứng dụng chưa thể xử lý yêu cầu. Vui lòng thử lại sau.',
     });
   });
 
   return app;
 }
 
-function startServer() {
+async function startServer() {
+  await db.connectDB();
   const app = createApp();
   const port = Number(process.env.PORT) || 3000;
 
-  return app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Server đang chạy tại cổng ${port}.`);
   });
+
+  async function shutdown(signal) {
+    console.log(`Đang dừng ứng dụng (${signal})...`);
+    server.close(async () => {
+      await db.closeDB();
+      process.exit(0);
+    });
+  }
+
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+  process.once('SIGINT', () => shutdown('SIGINT'));
+
+  return server;
 }
 
 if (require.main === module) {
-  startServer();
+  startServer().catch((error) => {
+    console.error(`Không thể khởi động ứng dụng: ${error.message}`);
+    process.exitCode = 1;
+  });
 }
 
 module.exports = { createApp, startServer };

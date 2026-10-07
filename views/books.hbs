@@ -1,0 +1,125 @@
+<div class="site-frame">
+  <header class="hero">
+    <div class="hero__copy">
+      <p class="eyebrow">Cloud database lab · 23IT293</p>
+      <h1>Ứng dụng<br>Quản lý Sách</h1>
+      <p class="hero__lede">Danh mục sách được đọc và ghi qua hai tài khoản MongoDB độc lập.</p>
+    </div>
+
+    <div class="connection-map" aria-label="Luồng kết nối dữ liệu">
+      <div class="connection-map__item">
+        <span>READ</span>
+        <strong>Danh sách sách</strong>
+        <small>reader_23IT293</small>
+      </div>
+      <span class="connection-map__arrow" aria-hidden="true">→</span>
+      <div class="connection-map__item connection-map__item--write">
+        <span>WRITE</span>
+        <strong>Thêm sách mới</strong>
+        <small>writer_23IT293</small>
+      </div>
+      <span class="connection-map__arrow" aria-hidden="true">→</span>
+      <div class="connection-map__item connection-map__item--session">
+        <span>SESSION</span>
+        <strong>Phiên tập trung</strong>
+        <small>MongoDB Atlas</small>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-grid">
+    <section class="panel panel--form" aria-labelledby="add-book-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Ghi dữ liệu</p>
+          <h2 id="add-book-heading">Thêm sách mới</h2>
+        </div>
+        <span class="vat-pill">VAT {{vatRate}}%</span>
+      </div>
+
+      {{#if error}}
+        <div class="notice notice--error" role="alert">{{error}}</div>
+      {{/if}}
+      {{#if success}}
+        <div class="notice notice--success" role="status">{{success}}</div>
+      {{/if}}
+
+      <form action="/books" method="post" class="book-form">
+        <label>
+          <span>Mã sách</span>
+          <input name="code" value="{{values.code}}" required autocomplete="off" placeholder="{{productPrefix}}BOOK01">
+          <small>Bắt buộc bắt đầu bằng {{productPrefix}}</small>
+        </label>
+
+        <label>
+          <span>Tên sách</span>
+          <input name="title" value="{{values.title}}" required autocomplete="off" placeholder="Kiến trúc điện toán đám mây">
+        </label>
+
+        <label>
+          <span>Tác giả</span>
+          <input name="author" value="{{values.author}}" autocomplete="off" placeholder="Tên tác giả (không bắt buộc)">
+        </label>
+
+        <label>
+          <span>Giá trước thuế</span>
+          <div class="price-input">
+            <input name="priceBeforeTax" value="{{values.priceBeforeTax}}" type="number" min="1" step="1" required placeholder="100000">
+            <b>VND</b>
+          </div>
+        </label>
+
+        <button type="submit">Thêm sách</button>
+      </form>
+    </section>
+
+    <section class="panel panel--list" aria-labelledby="book-list-heading">
+      <div class="section-heading section-heading--list">
+        <div>
+          <p class="section-kicker">Đọc dữ liệu</p>
+          <h2 id="book-list-heading">Danh sách sách</h2>
+        </div>
+        <span class="read-badge">qua readDb</span>
+      </div>
+
+      {{#if books.length}}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã sách</th>
+                <th>Tên sách</th>
+                <th>Tác giả</th>
+                <th>Trước thuế</th>
+                <th>VAT</th>
+                <th>Sau thuế</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each books}}
+                <tr>
+                  <td><code>{{code}}</code></td>
+                  <td><strong>{{title}}</strong></td>
+                  <td>{{#if author}}{{author}}{{else}}—{{/if}}</td>
+                  <td>{{formatCurrency priceBeforeTax}}</td>
+                  <td><span class="tax-rate">{{vatRate}}%</span></td>
+                  <td class="price-after-tax">{{formatCurrency priceAfterTax}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{else}}
+        <div class="empty-books">
+          <span aria-hidden="true">B</span>
+          <h3>Chưa có sách trong danh mục</h3>
+          <p>Thêm cuốn sách đầu tiên bằng biểu mẫu bên trái.</p>
+        </div>
+      {{/if}}
+    </section>
+  </main>
+
+  <footer>
+    <p>Huỳnh Tuấn Tú <span aria-hidden="true">·</span> MSSV: 23IT293 <span aria-hidden="true">·</span> VAT áp dụng: 9%</p>
+  </footer>
+</div>

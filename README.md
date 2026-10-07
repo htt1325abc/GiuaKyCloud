@@ -1,6 +1,6 @@
 # Ứng dụng Quản lý Sách 23IT293
 
-Project giữa kỳ môn Điện toán đám mây của Huỳnh Tuấn Tú, MSSV 23IT293.
+Project giữa kỳ môn Điện toán đám mây của Huỳnh Tuấn Tú, MSSV 23IT293. Ứng dụng dùng hai `MongoClient` độc lập để tách quyền đọc và ghi theo nguyên tắc least privilege.
 
 ## Khởi động nhanh
 
@@ -10,3 +10,14 @@ Project giữa kỳ môn Điện toán đám mây của Huỳnh Tuấn Tú, MSSV
 4. Mở `http://localhost:3000`.
 
 Không commit file `.env` hoặc bất kỳ URI và mật khẩu thật nào lên Git.
+
+## Luồng dữ liệu
+
+- `GET /` và `GET /books` đọc collection `books` bằng `READ_MONGO_URI`.
+- `POST /books` kiểm tra dữ liệu rồi ghi collection `books` bằng `WRITE_MONGO_URI`.
+- Mã sách phải bắt đầu bằng `293`.
+- Backend tự tính VAT `9%`; client không được quyết định giá sau thuế.
+
+## Kiểm thử
+
+Chạy `npm test` để kiểm tra prefix, phép tính VAT và việc điều hướng `readDb`/`writeDb`.
