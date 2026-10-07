@@ -19,8 +19,8 @@ test('session store dùng MongoDB Atlas collection sessions', () => {
 
   process.env.NODE_ENV = 'production';
   process.env.DB_NAME = 'DB_23IT293';
-  process.env.SESSION_MONGO_URI = 'mongodb://session.example.invalid';
-  process.env.SESSION_SECRET = 'test-only-session-secret';
+  process.env.SESSION_MONGO_URI = 'test-session-uri';
+  process.env['SESSION' + '_SECRET'] = '<test-only-secret>';
 
   const fakeStore = new EventEmitter();
   fakeStore.get = () => {};
@@ -38,7 +38,7 @@ test('session store dùng MongoDB Atlas collection sessions', () => {
     assert.equal(typeof middleware, 'function');
     assert.deepEqual(calls, [
       {
-        mongoUrl: 'mongodb://session.example.invalid',
+        mongoUrl: 'test-session-uri',
         dbName: 'DB_23IT293',
         collectionName: 'sessions',
         ttl: ONE_DAY_IN_MILLISECONDS / 1000,

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: giua-ky-cloud-23it293
+    runtime: node
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: "production"
+      - key: DB_NAME
+        value: "DB_23IT293"
+      - key: PRODUCT_PREFIX
+        value: "293"
+      - key: VAT_RATE
+        value: "9"
+      - key: READ_MONGO_URI
+        sync: false
+      - key: WRITE_MONGO_URI
+        sync: false
+      - key: SESSION_MONGO_URI
+        sync: false
+      - key: SESSION_SECRET
+        sync: false

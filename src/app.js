@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const path = require('node:path');
 const express = require('express');
@@ -28,7 +28,7 @@ function formatCurrency(value) {
   }).format(Number(value));
 }
 
-function createApp() {
+function createApp(options = {}) {
   const app = express();
 
   if (process.env.NODE_ENV === 'production') {
@@ -48,20 +48,22 @@ function createApp() {
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
-  app.use(createSessionMiddleware());
+  app.use(options.sessionMiddleware ?? createSessionMiddleware());
   app.use(countSessionVisit);
 
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
   });
 
-  const productPrefix = process.env.PRODUCT_PREFIX?.trim() || '293';
-  const vatRate = readNumberSetting('VAT_RATE');
+  const productPrefix = options.productPrefix ?? process.env.PRODUCT_PREFIX?.trim() ?? '293';
+  const vatRate = options.vatRate ?? readNumberSetting('VAT_RATE');
+  const getReadDb = options.getReadDb ?? (() => db.readDb);
+  const getWriteDb = options.getWriteDb ?? (() => db.writeDb);
 
   app.use(
     createBookRouter({
-      getReadDb: () => db.readDb,
-      getWriteDb: () => db.writeDb,
+      getReadDb,
+      getWriteDb,
       productPrefix,
       vatRate,
     }),
@@ -86,26 +88,31 @@ function createApp() {
 }
 
 async function startServer() {
-  await db.connectDB();
-  const app = createApp();
-  const port = Number(process.env.PORT) || 3000;
+  try {
+    await db.connectDB();
+    const app = createApp();
+    const port = Number(process.env.PORT) || 3000;
 
-  const server = app.listen(port, () => {
-    console.log(`Server đang chạy tại cổng ${port}.`);
-  });
-
-  async function shutdown(signal) {
-    console.log(`Đang dừng ứng dụng (${signal})...`);
-    server.close(async () => {
-      await db.closeDB();
-      process.exit(0);
+    const server = app.listen(port, () => {
+      console.log(`Server đang chạy tại cổng ${port}.`);
     });
+
+    async function shutdown(signal) {
+      console.log(`Đang dừng ứng dụng (${signal})...`);
+      server.close(async () => {
+        await db.closeDB();
+        process.exit(0);
+      });
+    }
+
+    process.once('SIGTERM', () => shutdown('SIGTERM'));
+    process.once('SIGINT', () => shutdown('SIGINT'));
+
+    return server;
+  } catch (error) {
+    await db.closeDB();
+    throw error;
   }
-
-  process.once('SIGTERM', () => shutdown('SIGTERM'));
-  process.once('SIGINT', () => shutdown('SIGINT'));
-
-  return server;
 }
 
 if (require.main === module) {
