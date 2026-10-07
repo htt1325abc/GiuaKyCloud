@@ -10,3 +10,5 @@ Project giữa kỳ môn Điện toán đám mây của Huỳnh Tuấn Tú, MSSV
 4. Mở `http://localhost:3000`.
 
 Không commit file `.env` hoặc bất kỳ URI và mật khẩu thật nào lên Git.
+
+Session không dùng `MemoryStore`. `connect-mongo` lưu phiên tập trung trong collection `sessions` của `DB_23IT293`, và số lượt truy cập trong phiên tăng sau mỗi lần mở trang quản lý.

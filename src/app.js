@@ -3,9 +3,17 @@ require('dotenv').config();
 const path = require('node:path');
 const express = require('express');
 const { engine } = require('express-handlebars');
+const {
+  createSessionMiddleware,
+  countSessionVisit,
+} = require('./config/session');
 
 function createApp() {
   const app = express();
+
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
 
   app.engine(
     'hbs',
@@ -19,6 +27,8 @@ function createApp() {
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
+  app.use(createSessionMiddleware());
+  app.use(countSessionVisit);
 
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
